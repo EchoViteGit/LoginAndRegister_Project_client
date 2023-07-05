@@ -3,6 +3,8 @@
 import { Lock, User, Message, Edit} from "@element-plus/icons-vue";
 import router from "@/router";
 import { reactive, ref } from "vue";
+import { ElMessage } from "element-plus";
+import { post } from "@/net";
 
 const form = reactive({
   username: '',
@@ -52,14 +54,47 @@ const rules = {
       message: '请输入正确的邮件地址',
       trigger: ['blur','change']
     }
+  ],
+  code:[
+    { required: true,message: '请输入验证码',trigger:['blur','change']},
   ]
 }
 
 const isEmailValid = ref(false)
+const formRef = ref()
+const coldTime = ref(0)
+
 
 const onValidate = (prop,isValid) => {
-  if(prop == 'email')
+  if(prop === 'email')
     isEmailValid.value = isValid
+}
+const register = () => {
+  formRef.value.validate((isValid) =>{
+    if(isValid){
+      post('/api/auth/register',{
+        username: form.username,
+        password: form.password,
+        email: form.email,
+        code: form.code
+      },(message)=>{
+        ElMessage.success(message)
+        router.push('/')
+      })
+    }else {
+      ElMessage.warning("请填写完成上述注册表单")
+    }
+  })
+}
+
+const validateEmail=()=>{
+  post('/api/auth/valid-email',{
+    email: form.email
+  },(message)=>{
+    ElMessage.success(message)
+    coldTime.value = 60
+    setInterval(()=>coldTime.value--,1000)
+  })
 }
 </script>
 
@@ -70,16 +105,16 @@ const onValidate = (prop,isValid) => {
       <div style="font-size: 14px; color: grey;margin-top: 20px">欢迎进入平台注册系统</div>
     </div>
     <div style="margin-top: 50px">
-      <el-form :model="form" :rules="rules" @validate="onValidate">
+      <el-form :model="form" :rules="rules" @validate="onValidate" ref="formRef">
         <el-form-item prop="username">
-          <el-input v-model="form.username" type="text" placeholder="用户名">
+          <el-input v-model="form.username" :maxlength="8" type="text" placeholder="用户名">
             <template #prefix>
               <el-icon><User /></el-icon>
             </template>
           </el-input>
         </el-form-item>
         <el-form-item prop="password">
-          <el-input v-model="form.password" type="password" placeholder="密码" >
+          <el-input v-model="form.password" :maxlength="16" type="password" placeholder="密码" >
             <template #prefix>
               <el-icon><Lock /></el-icon>
             </template>
@@ -99,24 +134,26 @@ const onValidate = (prop,isValid) => {
             </template>
           </el-input>
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="code">
           <el-row :gutter="10">
             <el-col :span="17">
-              <el-input v-model="form.code" placeholder="请输入验证码">
+              <el-input v-model="form.code" :maxlength="6" placeholder="请输入验证码">
                 <template #prefix>
                   <el-icon><Edit /></el-icon>
                 </template>
               </el-input>
             </el-col>
             <el-col :span="7" style="text-align: right">
-              <el-button type="success" :disabled="!isEmailValid">获取验证码</el-button>
+              <el-button type="success" :disabled="!isEmailValid"
+                         @click="validateEmail || coldTime>0">
+                          {{coldTime> 0 ? '请稍等'+coldTime+'秒':'获取验证码'}}</el-button>
             </el-col>
           </el-row>
         </el-form-item>
       </el-form>
     </div>
     <div style="margin-top: 80px">
-      <el-button type="warning" style="margin-top: 80px;width: 270px">注册</el-button>
+      <el-button type="warning" style="margin-top: 80px;width: 270px" @click="register">注册</el-button>
     </div>
     <div style="margin-top: 20px">
       <span style="font-size: 14px;line-height: 15px;color: gray">
