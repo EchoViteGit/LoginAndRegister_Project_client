@@ -9,10 +9,12 @@
         src="https://img.zcool.cn/community/01c8f15aeac135a801207fa16836ae.jpg@1280w_1l_2o_100sh.jpg" />
     </div>
     <div class="welcome-title">
-      <div>欢迎来到登录页！</div>
+      <div>欢迎进入VUE平台！</div>
     </div>
-    <div style="width: 400px; background-color: white">
-      <router-view/>
+    <div style="width: 400px; background-color: white;z-index: 1">
+      <transition name="el-fade-in-linear">
+        <router-view/>
+      </transition>
     </div>
   </div>
 </template>
