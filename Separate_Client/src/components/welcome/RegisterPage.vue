@@ -20,7 +20,13 @@ const validateUsername = (rule, value, callback) => {
   } else if (!/^[a-zA-Z0-9\u4e00-\u9fa5]+$/.test(value)) {
     callback(new Error('用户名不能使用特殊字符'))
   }else {
-    callback();
+    post('/api/auth/check-username',{
+      username: form.username,
+    },(message)=>{
+      ElMessage.success(message)
+    },(message)=>{
+      callback(new Error(message))
+    })
   }
 }
 
@@ -37,7 +43,7 @@ const validatePassword = (rule, value, callback) => {
 
 const rules = {
   username: [
-    { validator: validateUsername,trigger: ['blur','change']},
+    { validator: validateUsername,trigger: 'blur'},
     { min: 2, max: 8, message: '用户名长度在2-8个字符之间', trigger: ['blur','change'] },
   ],
   password:[
