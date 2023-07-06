@@ -48,12 +48,15 @@ const isEmailValid = ref(false)
 const formRef = ref()
 
 const validateEmail=()=>{
+  coldTime.value = 60
   post('/api/auth/valid-reset-email',{
     email: form.email
   },(message)=>{
     ElMessage.success(message)
-    coldTime.value = 60
     setInterval(()=>coldTime.value--,1000)
+  },(message)=>{
+    ElMessage.warning(message)
+    coldTime.value = 0
   })
 }
 const onValidate = (prop,isValid) => {
