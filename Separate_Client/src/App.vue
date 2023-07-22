@@ -13,9 +13,6 @@ if(store.auth.user == null){
     store.auth.user = null
   })
 }
-
-
-
 </script>
 <template>
   <router-view/>
