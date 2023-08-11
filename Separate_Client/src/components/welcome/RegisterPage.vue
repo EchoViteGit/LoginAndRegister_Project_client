@@ -14,21 +14,30 @@ const form = reactive({
   code:''
 })
 
+let flay = 1
 const validateUsername = (rule, value, callback) => {
   if (value === '') {
     callback(new Error('请输入用户名'))
   } else if (!/^[a-zA-Z0-9\u4e00-\u9fa5]+$/.test(value)) {
     callback(new Error('用户名不能使用特殊字符'))
   }else {
-    post('/api/auth/check-username',{
-      username: form.username,
-    },(message)=>{
-      ElMessage.success(message)
-    },(message)=>{
-      callback(new Error(message))
-    })
+    if(flay===1){
+      post('/api/auth/check-username',{
+        username: form.username,
+      },(message)=>{
+        ElMessage.success(message)
+        flay = 0
+        callback()
+      },(message)=>{
+        callback(new Error(message))
+      })
+    }else {
+      callback()
+    }
   }
 }
+
+
 
 const validatePassword = (rule, value, callback) => {
   if (value === '') {
@@ -105,6 +114,10 @@ const validateEmail=()=>{
     coldTime.value = 0
   })
 }
+
+function checkName() {
+  flay = 1
+}
 </script>
 
 <template>
@@ -116,7 +129,7 @@ const validateEmail=()=>{
     <div style="margin-top: 50px">
       <el-form :model="form" :rules="rules" @validate="onValidate" ref="formRef">
         <el-form-item prop="username">
-          <el-input v-model="form.username" :maxlength="8" type="text" placeholder="用户名">
+          <el-input v-model="form.username" :maxlength="8" type="text" placeholder="用户名" @blur="checkName">
             <template #prefix>
               <el-icon><User /></el-icon>
             </template>
